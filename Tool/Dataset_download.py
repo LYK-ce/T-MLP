@@ -151,13 +151,47 @@ def Download_ImageNet(save_dir):
     return True
 
 
+def Download_File_With_Headers(url, save_path, description=""):
+    """使用urllib下载文件（带请求头）"""
+    try:
+        print(f"下载 {description or url} ...")
+        
+        # 创建请求并添加User-Agent头
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        request = urllib.request.Request(url, headers=headers)
+        
+        with urllib.request.urlopen(request) as response:
+            total_size = int(response.headers.get('Content-Length', 0))
+            downloaded = 0
+            chunk_size = 8192
+            
+            with open(save_path, 'wb') as f:
+                while True:
+                    chunk = response.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = int(downloaded * 100 / total_size)
+                        print(f"\r进度: {percent}%", end='', flush=True)
+        
+        print()  # 换行
+        return True
+    except Exception as e:
+        print(f"\n下载失败: {str(e)}")
+        return False
+
+
 def Download_GLUE(save_dir):
-    """下载GLUE文本数据集 - 使用urllib直接从Hugging Face下载"""
+    """下载GLUE文本数据集 - 使用urllib直接从官方下载"""
     dataset_dir = os.path.join(save_dir, 'glue')
     Create_Directory(dataset_dir)
     
-    # GLUE 子任务列表
-    glue_tasks = ['CoLA', 'SST-2', 'MRPC', 'QQP', 'STS-B', 'MNLI', 'QNLI', 'RTE', 'WNLI']
+    # GLUE 子任务列表（包含AX诊断任务）
+    glue_tasks = ['CoLA', 'SST-2', 'MRPC', 'QQP', 'STS-B', 'MNLI', 'QNLI', 'RTE', 'WNLI', 'AX']
     
     # Hugging Face datasets 原始文件基础URL
     base_url = "https://dl.fbaipublicfiles.com/glue/data"
@@ -196,17 +230,22 @@ def Download_GLUE(save_dir):
         print(f"  下载 {task}...")
         
         if url.endswith('.tsv'):
-            # 直接下载tsv文件
+            # 直接下载tsv文件（使用带headers的版本）
             save_path = os.path.join(task_dir, 'test.tsv')
-            if Download_File(url, save_path, f"{task} test"):
+            if Download_File_With_Headers(url, save_path, f"{task} test"):
                 success_count += 1
         else:
             # 下载并解压zip文件
             zip_path = os.path.join(dataset_dir, f'{task}.zip')
-            if Download_File(url, zip_path, task):
-                if Extract_Archive(zip_path, dataset_dir):
-                    os.remove(zip_path)
-                    success_count += 1
+            # MRPC需要特殊处理403错误，使用带headers的版本
+            if task == 'MRPC':
+                success = Download_File_With_Headers(url, zip_path, task)
+            else:
+                success = Download_File(url, zip_path, task)
+            
+            if success and Extract_Archive(zip_path, dataset_dir):
+                os.remove(zip_path)
+                success_count += 1
     
     print(f"\nGLUE 数据集下载完成！({success_count}/{len(glue_tasks)} 个任务)")
     print(f"保存路径: {dataset_dir}")

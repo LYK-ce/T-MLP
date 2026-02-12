@@ -10,5 +10,7 @@
    - 实现功能:
      - Cifar-10/100: 使用urllib从Toronto官网下载tar.gz并解压
      - ImageNet: 生成下载说明(需手动下载)
-     - GLUE: 使用urllib从Facebook官方链接下载所有子任务
+     - GLUE: 使用urllib从Facebook官方链接下载所有10个子任务
+       - CoLA, SST-2, MRPC, QQP, STS-B, MNLI, QNLI, RTE, WNLI, AX
+       - MRPC使用带User-Agent头的请求解决403错误
    - 特点: 纯标准库实现，无需安装额外依赖
