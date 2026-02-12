@@ -8,7 +8,7 @@
    - 文件: Tool/Dataset_download.py
    - 用法: python Dataset_download.py --dataset <名称> --dir <路径>
    - 实现功能:
-     - Cifar-10: 通过torchvision自动下载
-     - Cifar-100: 通过torchvision自动下载
+     - Cifar-10/100: 使用urllib从Toronto官网下载tar.gz并解压
      - ImageNet: 生成下载说明(需手动下载)
-     - GLUE: 通过datasets库下载所有子任务
+     - GLUE: 使用urllib从Facebook官方链接下载所有子任务
+   - 特点: 纯标准库实现，无需安装额外依赖

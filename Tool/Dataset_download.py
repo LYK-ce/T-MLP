@@ -10,6 +10,10 @@
 import argparse
 import os
 import sys
+import urllib.request
+import tarfile
+import zipfile
+import json
 
 
 def Parse_Arguments():
@@ -36,62 +40,84 @@ def Create_Directory(dir_path):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
         print(f"创建目录: {dir_path}")
-    else:
-        print(f"目录已存在: {dir_path}")
+
+
+def Download_File(url, save_path, description=""):
+    """使用urllib下载文件"""
+    try:
+        print(f"下载 {description or url} ...")
+        
+        def Progress_Hook(count, block_size, total_size):
+            if total_size > 0:
+                percent = int(count * block_size * 100 / total_size)
+                percent = min(percent, 100)
+                print(f"\r进度: {percent}%", end='', flush=True)
+        
+        urllib.request.urlretrieve(url, save_path, Progress_Hook)
+        print()  # 换行
+        return True
+    except Exception as e:
+        print(f"\n下载失败: {str(e)}")
+        return False
+
+
+def Extract_Archive(archive_path, extract_dir):
+    """解压压缩文件"""
+    try:
+        if archive_path.endswith('.tar.gz') or archive_path.endswith('.tgz'):
+            with tarfile.open(archive_path, 'r:gz') as tar:
+                tar.extractall(extract_dir)
+        elif archive_path.endswith('.zip'):
+            with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+        print(f"解压完成: {extract_dir}")
+        return True
+    except Exception as e:
+        print(f"解压失败: {str(e)}")
+        return False
 
 
 def Download_Cifar10(save_dir):
     """下载Cifar-10数据集"""
-    try:
-        import torchvision
-        import torchvision.datasets as datasets
-        
-        dataset_dir = os.path.join(save_dir, 'cifar-10')
-        Create_Directory(dataset_dir)
-        
-        print("开始下载 Cifar-10 数据集...")
-        train_dataset = datasets.CIFAR10(
-            root=dataset_dir,
-            train=True,
-            download=True
-        )
-        test_dataset = datasets.CIFAR10(
-            root=dataset_dir,
-            train=False,
-            download=True
-        )
-        print(f"Cifar-10 数据集下载完成！保存路径: {dataset_dir}")
+    dataset_dir = os.path.join(save_dir, 'cifar-10')
+    Create_Directory(dataset_dir)
+    
+    # Cifar-10 官方下载链接
+    url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+    archive_path = os.path.join(dataset_dir, 'cifar-10-python.tar.gz')
+    
+    if os.path.exists(archive_path.replace('.tar.gz', '')):
+        print("Cifar-10 已存在，跳过下载")
         return True
-    except Exception as e:
-        print(f"下载 Cifar-10 失败: {str(e)}")
-        return False
+    
+    if Download_File(url, archive_path, "Cifar-10"):
+        if Extract_Archive(archive_path, dataset_dir):
+            # 删除压缩包
+            os.remove(archive_path)
+            print(f"Cifar-10 数据集下载完成！保存路径: {dataset_dir}")
+            return True
+    return False
 
 
 def Download_Cifar100(save_dir):
     """下载Cifar-100数据集"""
-    try:
-        import torchvision
-        import torchvision.datasets as datasets
-        
-        dataset_dir = os.path.join(save_dir, 'cifar-100')
-        Create_Directory(dataset_dir)
-        
-        print("开始下载 Cifar-100 数据集...")
-        train_dataset = datasets.CIFAR100(
-            root=dataset_dir,
-            train=True,
-            download=True
-        )
-        test_dataset = datasets.CIFAR100(
-            root=dataset_dir,
-            train=False,
-            download=True
-        )
-        print(f"Cifar-100 数据集下载完成！保存路径: {dataset_dir}")
+    dataset_dir = os.path.join(save_dir, 'cifar-100')
+    Create_Directory(dataset_dir)
+    
+    # Cifar-100 官方下载链接
+    url = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'
+    archive_path = os.path.join(dataset_dir, 'cifar-100-python.tar.gz')
+    
+    if os.path.exists(archive_path.replace('.tar.gz', '')):
+        print("Cifar-100 已存在，跳过下载")
         return True
-    except Exception as e:
-        print(f"下载 Cifar-100 失败: {str(e)}")
-        return False
+    
+    if Download_File(url, archive_path, "Cifar-100"):
+        if Extract_Archive(archive_path, dataset_dir):
+            os.remove(archive_path)
+            print(f"Cifar-100 数据集下载完成！保存路径: {dataset_dir}")
+            return True
+    return False
 
 
 def Download_ImageNet(save_dir):
@@ -114,56 +140,77 @@ def Download_ImageNet(save_dir):
     
     readme_path = os.path.join(dataset_dir, 'README.txt')
     with open(readme_path, 'w', encoding='utf-8') as f:
-        f.write("ImageNet 数据集下载说明\\n")
-        f.write("=" * 60 + "\\n\\n")
-        f.write("1. 访问 https://image-net.org/download.php\\n")
-        f.write("2. 注册账号并申请下载权限\\n")
-        f.write("3. 下载 ILSVRC2012 数据集\\n")
-        f.write("4. 解压到本目录\\n")
+        f.write("ImageNet 数据集下载说明\n")
+        f.write("=" * 60 + "\n\n")
+        f.write("1. 访问 https://image-net.org/download.php\n")
+        f.write("2. 注册账号并申请下载权限\n")
+        f.write("3. 下载 ILSVRC2012 数据集\n")
+        f.write("4. 解压到本目录\n")
     
     print(f"已在 {dataset_dir} 创建 README.txt 文件")
     return True
 
 
 def Download_GLUE(save_dir):
-    """下载GLUE文本数据集"""
-    try:
-        from datasets import load_dataset
+    """下载GLUE文本数据集 - 使用urllib直接从Hugging Face下载"""
+    dataset_dir = os.path.join(save_dir, 'glue')
+    Create_Directory(dataset_dir)
+    
+    # GLUE 子任务列表
+    glue_tasks = ['CoLA', 'SST-2', 'MRPC', 'QQP', 'STS-B', 'MNLI', 'QNLI', 'RTE', 'WNLI']
+    
+    # Hugging Face datasets 原始文件基础URL
+    base_url = "https://dl.fbaipublicfiles.com/glue/data"
+    
+    # 任务到下载链接的映射
+    task_urls = {
+        'CoLA': f"{base_url}/CoLA.zip",
+        'SST-2': f"{base_url}/SST-2.zip",
+        'MRPC': f"{base_url}/MRPC.zip",
+        'QQP': f"{base_url}/QQP-clean.zip",
+        'STS-B': f"{base_url}/STS-B.zip",
+        'MNLI': f"{base_url}/MNLI.zip",
+        'QNLI': f"{base_url}/QNLIv2.zip",
+        'RTE': f"{base_url}/RTE.zip",
+        'WNLI': f"{base_url}/WNLI.zip",
+        'AX': f"{base_url}/AX.tsv"
+    }
+    
+    print("开始下载 GLUE 数据集...")
+    success_count = 0
+    
+    for task in glue_tasks:
+        task_dir = os.path.join(dataset_dir, task)
+        Create_Directory(task_dir)
         
-        dataset_dir = os.path.join(save_dir, 'glue')
-        Create_Directory(dataset_dir)
+        url = task_urls.get(task)
+        if not url:
+            continue
         
-        # GLUE包含多个子任务
-        glue_tasks = [
-            'cola', 'sst2', 'mrpc', 'qqp', 'stsb',
-            'mnli', 'qnli', 'rte', 'wnli'
-        ]
+        # 检查是否已存在
+        if os.listdir(task_dir):
+            print(f"  {task}: 已存在，跳过")
+            success_count += 1
+            continue
         
-        print("开始下载 GLUE 数据集...")
-        for task in glue_tasks:
-            print(f"  下载 {task}...")
-            try:
-                dataset = load_dataset('glue', task)
-                task_dir = os.path.join(dataset_dir, task)
-                Create_Directory(task_dir)
-                
-                # 保存为JSON格式
-                for split in dataset.keys():
-                    output_file = os.path.join(task_dir, f'{split}.json')
-                    dataset[split].to_json(output_file)
-                    print(f"    {split}: {len(dataset[split])} 条记录")
-            except Exception as e:
-                print(f"    {task} 下载失败: {str(e)}")
+        print(f"  下载 {task}...")
         
-        print(f"GLUE 数据集下载完成！保存路径: {dataset_dir}")
-        return True
-    except ImportError:
-        print("错误: 需要安装 datasets 库")
-        print("请运行: pip install datasets")
-        return False
-    except Exception as e:
-        print(f"下载 GLUE 失败: {str(e)}")
-        return False
+        if url.endswith('.tsv'):
+            # 直接下载tsv文件
+            save_path = os.path.join(task_dir, 'test.tsv')
+            if Download_File(url, save_path, f"{task} test"):
+                success_count += 1
+        else:
+            # 下载并解压zip文件
+            zip_path = os.path.join(dataset_dir, f'{task}.zip')
+            if Download_File(url, zip_path, task):
+                if Extract_Archive(zip_path, dataset_dir):
+                    os.remove(zip_path)
+                    success_count += 1
+    
+    print(f"\nGLUE 数据集下载完成！({success_count}/{len(glue_tasks)} 个任务)")
+    print(f"保存路径: {dataset_dir}")
+    return success_count > 0
 
 
 def Download_Dataset(dataset_name, save_dir):
@@ -182,37 +229,9 @@ def Download_Dataset(dataset_name, save_dir):
     return download_functions[dataset_name](save_dir)
 
 
-def Check_Dependencies(dataset_name):
-    """检查数据集依赖的库是否已安装"""
-    missing_deps = []
-    
-    if dataset_name in ['Cifar-10', 'Cifar-100']:
-        try:
-            import torchvision
-        except ImportError:
-            missing_deps.append('torchvision')
-    
-    if dataset_name == 'GLUE':
-        try:
-            import datasets
-        except ImportError:
-            missing_deps.append('datasets')
-    
-    if missing_deps:
-        print(f"错误: 缺少必要的依赖库: {', '.join(missing_deps)}")
-        print(f"请运行: pip install {' '.join(missing_deps)}")
-        return False
-    
-    return True
-
-
 def Main():
     """主函数"""
     args = Parse_Arguments()
-    
-    # 检查依赖
-    if not Check_Dependencies(args.dataset):
-        sys.exit(1)
     
     # 创建目标目录
     Create_Directory(args.dir)
@@ -221,10 +240,10 @@ def Main():
     success = Download_Dataset(args.dataset, args.dir)
     
     if success:
-        print(f"\\n数据集 {args.dataset} 准备完成！")
+        print(f"\n数据集 {args.dataset} 准备完成！")
         sys.exit(0)
     else:
-        print(f"\\n数据集 {args.dataset} 准备失败！")
+        print(f"\n数据集 {args.dataset} 准备失败！")
         sys.exit(1)
 
 
