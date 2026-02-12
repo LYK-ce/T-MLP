@@ -3,7 +3,7 @@
 #Date ： 2026-02-12
 
 # T-MLP Training Script for Linux
-# This script trains VGG16 and Deit models on Cifar-10 and Cifar-100 datasets
+# This script trains VGG16 and Deit models on Cifar-10, Cifar-100, and ImageNet datasets
 
 set -e
 
@@ -20,7 +20,7 @@ mkdir -p "$WEIGHT_DIR"
 
 # Train VGG16 on Cifar-10
 echo ""
-echo "[1/4] Training VGG16 on Cifar-10..."
+echo "[1/6] Training VGG16 on Cifar-10..."
 python "$TRAIN_SCRIPT" \
     --model VGG16 \
     --dataset Cifar-10 \
@@ -34,7 +34,7 @@ python "$TRAIN_SCRIPT" \
 
 # Train VGG16 on Cifar-100
 echo ""
-echo "[2/4] Training VGG16 on Cifar-100..."
+echo "[2/6] Training VGG16 on Cifar-100..."
 python "$TRAIN_SCRIPT" \
     --model VGG16 \
     --dataset Cifar-100 \
@@ -46,9 +46,23 @@ python "$TRAIN_SCRIPT" \
     --device cuda \
     --num_workers 4
 
+# Train VGG16 on ImageNet
+echo ""
+echo "[3/6] Training VGG16 on ImageNet..."
+python "$TRAIN_SCRIPT" \
+    --model VGG16 \
+    --dataset ImageNet \
+    --path "$WEIGHT_DIR/VGG16_ImageNet" \
+    --epoch 90 \
+    --lr 0.01 \
+    --batch_size 256 \
+    --weight_decay 1e-4 \
+    --device cuda \
+    --num_workers 8
+
 # Train Deit on Cifar-10
 echo ""
-echo "[3/4] Training Deit on Cifar-10..."
+echo "[4/6] Training Deit on Cifar-10..."
 python "$TRAIN_SCRIPT" \
     --model Deit \
     --dataset Cifar-10 \
@@ -62,7 +76,7 @@ python "$TRAIN_SCRIPT" \
 
 # Train Deit on Cifar-100
 echo ""
-echo "[4/4] Training Deit on Cifar-100..."
+echo "[5/6] Training Deit on Cifar-100..."
 python "$TRAIN_SCRIPT" \
     --model Deit \
     --dataset Cifar-100 \
@@ -73,6 +87,20 @@ python "$TRAIN_SCRIPT" \
     --weight_decay 5e-4 \
     --device cuda \
     --num_workers 4
+
+# Train Deit on ImageNet
+echo ""
+echo "[6/6] Training Deit on ImageNet..."
+python "$TRAIN_SCRIPT" \
+    --model Deit \
+    --dataset ImageNet \
+    --path "$WEIGHT_DIR/Deit_ImageNet" \
+    --epoch 300 \
+    --lr 0.001 \
+    --batch_size 256 \
+    --weight_decay 0.05 \
+    --device cuda \
+    --num_workers 8
 
 echo ""
 echo "========================================"

@@ -64,3 +64,22 @@
      - Linux批处理脚本
      - 顺序训练4个任务: VGG16_C10, VGG16_C100, Deit_C10, Deit_C100
      - 默认参数: epoch=200, lr=0.1, batch=128
+6. [x] ImageNet模型实现 - 2026-02-12 完成
+   - 依赖: 无
+   - 目标: Model/VGG_16_ImageNet.py, Model/Deit_Small_ImageNet.py
+   - 开始时间: 2026-02-12T12:11
+   - 结束时间: 2026-02-12T12:13
+   - ImageNet配置: num_classes=1000, input_size=224
+   - VGG_ImageNet: flattened_size=512*7*7=25088, 保存权重vgg16_imagenet
+   - Deit_ImageNet: patch_size=16, num_patches=196, 保存权重deit_imagenet
+   - 文件:
+     - Model/VGG_16_ImageNet.py (Class VGG_ImageNet)
+     - Model/Deit_Small_ImageNet.py (Class Deit_ImageNet)
+   - Src/train.py更新:
+     - Get_Model()支持ImageNet模型导入
+     - Get_Dataset()支持ImageNet数据加载(ImageNet的train/val split)
+     --dataset参数添加ImageNet选项
+   - train.sh更新:
+     - 从4个任务扩展到6个任务
+     - 添加VGG16_ImageNet训练(epoch=90, lr=0.01, batch=256)
+     - 添加Deit_ImageNet训练(epoch=300, lr=0.001, batch=256)

@@ -133,6 +133,34 @@ Class Deit_Cifar100
     将当前模型权重"deit_cifar100"保存到weight_path目录下
 
 
+Model/VGG_16_ImageNet.py
+
+Class VGG_ImageNet
+属性：
+- num_calsses
+- input_size
+
+- weight_path
+
+方法
+- 初始化方法
+- forward方法
+- Save_Model_Weight(weight_path)
+    将当前模型权重"vgg16_ImageNet"保存到weight_path目录下
+
+
+Class Deit_ImageNet
+属性：
+- num_calsses
+- input_size
+
+- weight_path
+
+方法
+- 初始化方法
+- forward方法
+- Save_Model_Weight(weight_path)
+    将当前模型权重"Deit_ImageNet"保存到weight_path目录下
 
 ## 训练
 我们需要先提前准备好训练好的模型进行实验。

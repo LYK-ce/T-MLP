@@ -24,6 +24,9 @@ def Get_Model(model_name, dataset_name):
         elif dataset_name == 'Cifar-100':
             from Model.VGG_16_Cifar100 import VGG_Cifar100
             return VGG_Cifar100()
+        elif dataset_name == 'ImageNet':
+            from Model.VGG_16_ImageNet import VGG_ImageNet
+            return VGG_ImageNet()
     elif model_name == 'Deit':
         if dataset_name == 'Cifar-10':
             from Model.Deit_Small_Cifar10 import Deit_Cifar10
@@ -31,6 +34,9 @@ def Get_Model(model_name, dataset_name):
         elif dataset_name == 'Cifar-100':
             from Model.Deit_Small_Cifar100 import Deit_Cifar100
             return Deit_Cifar100()
+        elif dataset_name == 'ImageNet':
+            from Model.Deit_Small_ImageNet import Deit_ImageNet
+            return Deit_ImageNet()
     raise ValueError(f"Unsupported model {model_name} or dataset {dataset_name}")
 
 
@@ -65,6 +71,23 @@ def Get_Dataset(dataset_name, base_data_dir):
         train_set = torchvision.datasets.CIFAR100(root=data_dir, train=True, download=False, transform=transform_train)
         test_set = torchvision.datasets.CIFAR100(root=data_dir, train=False, download=False, transform=transform_test)
         num_classes = 100
+    elif dataset_name == 'ImageNet':
+        data_dir = os.path.join(base_data_dir, 'ImageNet')
+        transform_train = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ])
+        transform_test = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+        ])
+        train_set = torchvision.datasets.ImageNet(root=data_dir, split='train', transform=transform_train)
+        test_set = torchvision.datasets.ImageNet(root=data_dir, split='val', transform=transform_test)
+        num_classes = 1000
     else:
         raise ValueError(f"Unsupported dataset {dataset_name}")
     return train_set, test_set, num_classes
@@ -159,7 +182,7 @@ def Train_Model(args):
 def main():
     parser = argparse.ArgumentParser(description='Train model on dataset')
     parser.add_argument('--model', type=str, required=True, choices=['VGG16', 'Deit'], help='Model name')
-    parser.add_argument('--dataset', type=str, required=True, choices=['Cifar-10', 'Cifar-100'], help='Dataset name')
+    parser.add_argument('--dataset', type=str, required=True, choices=['Cifar-10', 'Cifar-100', 'ImageNet'], help='Dataset name')
     parser.add_argument('--path', type=str, default='ModelWeights', help='Path to save model weights')
     parser.add_argument('--epoch', type=int, default=200, help='Number of training epochs')
     parser.add_argument('--lr', type=float, default=0.1, help='Learning rate')
