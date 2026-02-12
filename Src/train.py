@@ -34,8 +34,9 @@ def Get_Model(model_name, dataset_name):
     raise ValueError(f"Unsupported model {model_name} or dataset {dataset_name}")
 
 
-def Get_Dataset(dataset_name, data_dir):
+def Get_Dataset(dataset_name, base_data_dir):
     if dataset_name == 'Cifar-10':
+        data_dir = os.path.join(base_data_dir, 'cifar-10')
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -46,10 +47,11 @@ def Get_Dataset(dataset_name, data_dir):
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
-        train_set = torchvision.datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform_train)
-        test_set = torchvision.datasets.CIFAR10(root=data_dir, train=False, download=True, transform=transform_test)
+        train_set = torchvision.datasets.CIFAR10(root=data_dir, train=True, download=False, transform=transform_train)
+        test_set = torchvision.datasets.CIFAR10(root=data_dir, train=False, download=False, transform=transform_test)
         num_classes = 10
     elif dataset_name == 'Cifar-100':
+        data_dir = os.path.join(base_data_dir, 'cifar-100')
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -60,8 +62,8 @@ def Get_Dataset(dataset_name, data_dir):
             transforms.ToTensor(),
             transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)),
         ])
-        train_set = torchvision.datasets.CIFAR100(root=data_dir, train=True, download=True, transform=transform_train)
-        test_set = torchvision.datasets.CIFAR100(root=data_dir, train=False, download=True, transform=transform_test)
+        train_set = torchvision.datasets.CIFAR100(root=data_dir, train=True, download=False, transform=transform_train)
+        test_set = torchvision.datasets.CIFAR100(root=data_dir, train=False, download=False, transform=transform_test)
         num_classes = 100
     else:
         raise ValueError(f"Unsupported dataset {dataset_name}")
