@@ -197,10 +197,11 @@ def Download_GLUE(save_dir):
     base_url = "https://dl.fbaipublicfiles.com/glue/data"
     
     # 任务到下载链接的映射
+    # MRPC使用Hugging Face镜像（Facebook官方403限制）
     task_urls = {
         'CoLA': f"{base_url}/CoLA.zip",
         'SST-2': f"{base_url}/SST-2.zip",
-        'MRPC': f"{base_url}/MRPC.zip",
+        'MRPC': "https://huggingface.co/datasets/glue/resolve/main/data/MRPC.zip",
         'QQP': f"{base_url}/QQP-clean.zip",
         'STS-B': f"{base_url}/STS-B.zip",
         'MNLI': f"{base_url}/MNLI.zip",
