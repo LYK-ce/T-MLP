@@ -85,8 +85,8 @@ def Get_Dataset(dataset_name, base_data_dir):
             transforms.ToTensor(),
             transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
         ])
-        train_set = torchvision.datasets.ImageNet(root=data_dir, split='train', transform=transform_train)
-        test_set = torchvision.datasets.ImageNet(root=data_dir, split='val', transform=transform_test)
+        train_set = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, 'train'), transform=transform_train)
+        test_set = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, 'val'), transform=transform_test)
         num_classes = 1000
     else:
         raise ValueError(f"Unsupported dataset {dataset_name}")
